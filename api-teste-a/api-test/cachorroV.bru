@@ -1,0 +1,20 @@
+meta {
+  name: cachorroV
+  type: http
+  seq: 10
+}
+
+post {
+  url: https://back-end-api-n6jh.vercel.app/cachorros
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "raça": "vira lata",
+    "cor": "rosa",
+    "adereço": "muleta",
+    "nivel": 2
+  }
+}
