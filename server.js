@@ -185,3 +185,135 @@ console.log("Rota GET / solicitada");
 app.listen(port, () => {            // Um socket para "escutar" as requisições
   console.log(`Serviço rodando na porta:  ${port}`);
 });
+
+app.get("/cachorros", async (req, res) => {
+  console.log("Rota GET /cachorros solicitada");
+
+  const db = conectarBD();
+  try {
+    const resultado = await db.query("SELECT * FROM cachorros");
+    const data = resultado.rows;
+    res.json(data);
+  } catch (e) {
+    console.error("Erro ao buscar cachorros:", e);
+    res.status(500).json({
+      erro: "Erro interno do servidor",
+      mensagem: "Não foi possível buscar os cachorros",
+    });
+  }
+});
+
+app.get("/cachorros/:id", async (req, res) => {
+  console.log("Rota GET /cachorros/:id solicitada");
+
+  try {
+    const id = req.params.id;
+    const db = conectarBD();
+    const consulta = "SELECT * FROM cachorros WHERE id = $1";
+    const resultado = await db.query(consulta, [id]);
+    const dados = resultado.rows;
+
+    if (dados.length === 0) {
+      return res.status(404).json({ mensagem: "Cachorro não encontrado" });
+    }
+
+    res.json(dados);
+  } catch (e) {
+    console.error("Erro ao buscar cachorro:", e);
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+});
+
+app.post("/cachorros", async (req, res) => {
+  console.log("Rota POST /cachorros solicitada");
+
+  try {
+    const data = req.body;
+
+    if (!data.raça || !data.cor || !data.adereço || !data.nivel) {
+      return res.status(400).json({
+        erro: "Dados inválidos",
+        mensagem:
+          "Todos os campos (raça, cor, adereço, nivel) são obrigatórios.",
+      });
+    }
+
+    const db = conectarBD();
+    const consulta =
+      "INSERT INTO cachorros (raça, cor, adereço, nivel) VALUES ($1, $2, $3, $4)";
+    const valores = [data.raça, data.cor, data.adereço, data.nivel];
+    await db.query(consulta, valores);
+
+    res.status(201).json({ mensagem: "Cachorro criado com sucesso!" });
+  } catch (e) {
+    console.error("Erro ao inserir cachorro:", e);
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+});
+
+app.put("/cachorros/:id", async (req, res) => {
+  console.log("Rota PUT /cachorros/:id solicitada");
+
+  try {
+    const id = req.params.id;
+    const db = conectarBD();
+
+    let consulta = "SELECT * FROM cachorros WHERE id = $1";
+    let resultado = await db.query(consulta, [id]);
+    let cachorro = resultado.rows;
+
+    if (cachorro.length === 0) {
+      return res.status(404).json({ mensagem: "Cachorro não encontrado" });
+    }
+
+    const data = req.body;
+
+
+    data.raça = data.raça || cachorro[0].raça;
+    data.cor = data.cor || cachorro[0].cor;
+    data.adereço = data.adereço || cachorro[0].adereço;
+    data.nivel = data.nivel || cachorro[0].nivel;
+
+    consulta =
+      "UPDATE cachorros SET raça = $1, cor = $2, adereço = $3, nivel = $4 WHERE id = $5";
+    await db.query(consulta, [
+      data.raça,
+      data.cor,
+      data.adereço,
+      data.nivel,
+      id,
+    ]);
+
+    res.status(200).json({ mensagem: "Cachorro atualizado com sucesso!" });
+  } catch (e) {
+    console.error("Erro ao atualizar cachorro:", e);
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+});
+
+app.delete("/cachorros/:id", async (req, res) => {
+  console.log("Rota DELETE /cachorros/:id solicitada");
+
+  try {
+    const id = req.params.id;
+    const db = conectarBD();
+
+    let consulta = "SELECT * FROM cachorros WHERE id = $1";
+    let resultado = await db.query(consulta, [id]);
+    let dados = resultado.rows;
+
+    if (dados.length === 0) {
+      return res.status(404).json({ mensagem: "Cachorro não encontrado" });
+    }
+
+    consulta = "DELETE FROM cachorros WHERE id = $1";
+    await db.query(consulta, [id]);
+
+    res.status(200).json({ mensagem: "Cachorro excluído com sucesso!" });
+  } catch (e) {
+    console.error("Erro ao excluir cachorro:", e);
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+});
+
+// ==================== FIM DAS ROTAS "CACHORROS" ====================
