@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import express from "express";      // Requisição do pacote do express
 const { Pool } = pkg; // Obtém o construtor Pool do pacote pg para gerenciar conexões com o banco de dados PostgreSQL
 const app = express();              // Instancia o Express
+app.use(express.json()); // Middleware para interpretar requisições com corpo em JSON
 const port = 3000;                  // Define a porta
 dotenv.config();         // Carrega e processa o arquivo .env
 let pool = null; // Variável para armazenar o pool de conexões com o banco de dados
@@ -69,7 +70,7 @@ app.delete("/questoes/:id", async (req, res) => {
   }
 });
 
-app.use(express.json()); // Middleware para interpretar requisições com corpo em JSON
+
 
 //server.js
 app.post("/questoes", async (req, res) => {
